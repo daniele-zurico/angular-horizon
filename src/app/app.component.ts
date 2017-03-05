@@ -1,10 +1,51 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
+import { HorizonService } from './horizon.service';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  template: `
+	  <h1>{{title}}</h1>
+	  <form (submit)="add(todo)">
+		  <input type="text" [(ngModel)]="todo" name="todo">
+		  <button type="submit">Add</button>
+	  </form>
+	  <ul>
+		  <li *ngFor="let item of items | async">
+			  {{item.text}}
+		  </li>
+	  </ul>
+  `
 })
-export class AppComponent {
+export class AppComponent implements OnInit{
+
   title = 'app works!';
+  todo: string = '';
+  items: any;
+  table = this.horizon.table('todos');
+
+  constructor(private horizon: HorizonService) {
+  }
+
+  ngOnInit() {
+    this.load();
+  }
+
+  load() {
+
+    this.items = this.table
+        .order('datetime', 'descending')
+        .limit(10)
+        .watch();
+  }
+
+  add(todo: string) {
+
+    this.table.store({
+      text: todo,
+      datetime: new Date(),
+    });
+
+    // clear
+    this.todo = '';
+  }
 }
